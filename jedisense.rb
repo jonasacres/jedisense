@@ -5,6 +5,8 @@ require 'rubygems'
 require 'sinatra'
 require 'json'
 
+include Mongo
+
 SECRET = ENV['PRESENCE_SECRET']
 VALIDATOR = ENV['PRESENCE_VALIDATOR']
 MONGO_HOST = ENV['MONGO_HOST']
