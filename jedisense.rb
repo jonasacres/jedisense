@@ -45,9 +45,9 @@ get '/people' do
   
   seenRecords = {}
   clients.each do |client|
-    next if seenRecords.has_key?(client["mac"])
-    client["user"] = usersByMac[client["mac"]]
-    seenRecords[client["mac"]] = client
+    next if seenRecords.has_key?(client["client_mac"])
+    client["user"] = usersByMac[client["client_mac"]]
+    seenRecords[client["client_mac"]] = client
   end
   
   seenRecords.to_json
