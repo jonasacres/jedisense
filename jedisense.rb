@@ -47,10 +47,17 @@ get '/people' do
   clients.each do |client|
     next if seenRecords.has_key?(client["client_mac"])
     client["user"] = usersByMac[client["client_mac"]]
-    seenRecords[client["client_mac"]] = client
+    recordKeys = ["client_mac", "ap_mac", "last_seen_epoch", "rssi", "user"]
+    record = {}
+    recordKeys.each do |key|
+      record[key] = client[key]
+    end
+    
+    seenRecords[client["client_mac"]] = record
   end
   
-  seenRecords.to_json
+  response = { "time_now" => Time.new(), "records" => seenRecords }
+  resposne.to_json
 end
 
 get '/events' do
