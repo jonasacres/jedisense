@@ -34,7 +34,7 @@ get '/people' do
   devices = db["devices"].find().to_a
   usersByMac = {}
   devices.each do |device|
-    usersByMac[device["name"]]
+    usersByMac[device["mac"]] = device["name"]
   end
   
   minTimestamp = Time.new().to_i - 60*10
