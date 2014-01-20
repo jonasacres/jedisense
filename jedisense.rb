@@ -46,11 +46,11 @@ get '/people' do
   seenRecords = {}
   clients.each do |client|
     next if seenRecords.has_key?(client["client_mac"])
-    client["user"] = usersByMac[client["client_mac"]] if usersByMac.has_key?(client["client_mac"])
+    client["user"] = usersByMac[client["client_mac"]]
     recordKeys = ["client_mac", "ap_mac", "last_seen_epoch", "rssi", "user"]
     record = {}
     recordKeys.each do |key|
-      record[key] = client[key]
+      record[key] = client[key] if (client.has_key?(key) and client["key"] != Null)
     end
     
     seenRecords[client["client_mac"]] = record
