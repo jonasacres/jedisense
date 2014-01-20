@@ -50,7 +50,7 @@ get '/people' do
     recordKeys = ["client_mac", "ap_mac", "last_seen_epoch", "rssi", "user"]
     record = {}
     recordKeys.each do |key|
-      record[key] = client[key] if (client.has_key?(key) and client["key"] != nil)
+      record[key] = client[key] if client[key] != nil
     end
     
     seenRecords[client["client_mac"]] = record
