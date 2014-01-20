@@ -56,7 +56,7 @@ get '/people' do
     seenRecords[client["client_mac"]] = record
   end
   
-  seenRecords.to_json
+  seenRecords.values.to_json
 end
 
 get '/events' do
