@@ -56,8 +56,7 @@ get '/people' do
     seenRecords[client["client_mac"]] = record
   end
   
-  reply = { "time_now" => Time.new(), "records" => seenRecords }
-  reply.to_json
+  seenRecords.to_json
 end
 
 get '/events' do
