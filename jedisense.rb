@@ -5,40 +5,55 @@ require 'mongo'
 require 'rubygems'
 require 'sinatra'
 require 'json'
+require 'net/http'
+require 'rest-client'
 
 include Mongo
 
-SECRET = ENV['PRESENCE_SECRET']
-VALIDATOR = ENV['PRESENCE_VALIDATOR']
-MONGO_HOST = ENV['MONGO_HOST']
-MONGO_PORT = ENV['MONGO_PORT']
-MONGO_DBNAME = ENV['MONGO_DBNAME']
+$SECRET = ENV['PRESENCE_SECRET']
+$VALIDATOR = ENV['PRESENCE_VALIDATOR']
+$MONGO_HOST = ENV['MONGO_HOST']
+$MONGO_PORT = ENV['MONGO_PORT']
+$MONGO_DBNAME = ENV['MONGO_DBNAME']
+$MAILGUN_KEY = ENV['MAILGUN_API_KEY']
+$MAILGUN_DOMAIN = ENV['MAILGUN_DOMAIN']
+$MAILGUN_FROM = ENV['MAILGUN_FROM']
+
+$db = MongoClient.new($MONGO_HOST, $MONGO_PORT).db($MONGO_DBNAME)
 
 def epochForTimeSeen(ts)
   # eg "Mon Jan 20 20:10:17.418 UTC 2014", [ Weekday, Month, Day, Timecode, UTC, Year ]
-  comps = ts.split(" ")
-  months = { "Jan"=>"01", "Feb"=>"02", "Mar"=>"03", "Apr"=>"04", "May"=>"05", "Jun"=>"06", "Jul"=>"07", "Aug"=>"08", "Sep"=>"09", "Oct"=>"10", "Nov"=>"11", "Dec"=>"12" }
-  month = months[comps[1]]
-  timestr = comps[3].split(".")[0]
-  formatted = "#{comps[5]}-#{month}-#{comps[2]} #{timestr}"
-  date = DateTime.strptime(formatted, "%Y-%m-%d %H:%M:%S")
-  
-  return date.strftime("%s").to_i
+  return Time.parse(ts).to_i
 end
 
-db = MongoClient.new(MONGO_HOST, MONGO_PORT).db(MONGO_DBNAME)
+def recentlySeen?(mac)
+  sighting = $db["clients"].find_one( { "$query" => { 'client_mac' => mac }, "$orderby" => { 'last_seen_epoch' => -1 }  } )
+  return false unless sighting
+  
+  timeAgo = Time.new().to_i - sighting["last_seen_epoch"].to_i
+  return timeAgo <= 60*60*8
+end
+
+def sendEmail(subject, body, recipients)
+  url = "https://api:#{$MAILGUN_KEY}@api.mailgun.net/v2/#{$MAILGUN_DOMAIN}/messages"
+  RestClient.post url,
+    :from => $MAILGUN_FROM,
+    :to => recipients.join(", "),
+    :subject => subject,
+    :html => body
+end
 
 get '/people' do
   content_type :json
   
-  devices = db["devices"].find().to_a
+  devices = $db["devices"].find().to_a
   usersByMac = {}
   devices.each do |device|
     usersByMac[device["mac"]] = device["name"]
   end
   
   minTimestamp = Time.new().to_i - 60*10
-  clients = db["clients"].find({
+  clients = $db["clients"].find({
       "$query" => { "last_seen_epoch" => { "$gt" => minTimestamp } },
     "$orderby" => { "last_seen_epoch" => -1 }
     })
@@ -47,7 +62,7 @@ get '/people' do
   clients.each do |client|
     next if seenRecords.has_key?(client["client_mac"])
     client["user"] = usersByMac[client["client_mac"]]
-    recordKeys = ["client_mac", "ap_mac", "last_seen_epoch", "rssi", "user"]
+    recordKeys = ["client_mac", "ap_mac", "last_seen_epoch", "rssi", "user", "site"]
     record = {}
     recordKeys.each do |key|
       record[key] = client[key] if client[key] != nil
@@ -59,13 +74,13 @@ get '/people' do
   seenRecords.values.to_json
 end
 
-get '/events' do
-  VALIDATOR
+get '/events/:site' do
+  $VALIDATOR
 end
 
-post '/events' do
+post '/events/:site' do
   map = JSON.parse(params[:data])
-  if map['secret'] != SECRET
+  if map['secret'] != $SECRET
     logger.warn "got post with bad secret: #{map['secret']}"
     return
   end
@@ -73,7 +88,13 @@ post '/events' do
   map['probing'].each do |c|
     c["last_seen_epoch"] = epochForTimeSeen(c["last_seen"])
     c["site"] = params["site"]
-    db["clients"].insert(c);
+    
+    if c["client_mac"] == "00:88:65:d3:b3:39" and not recentlySeen?(c["client_mac"]) then
+      sendEmail("Mark Dailey has arrived at the office", "Lo, on this fine morn, our Captain arrives to Preside Over our Labors with His Noble Guidance.", ["acresjonas@gmail.com", "jonas@becuddle.com"])
+      puts "saw MAC: #{c['client_mac']}"
+    end
+    
+    $db["clients"].insert(c);
     logger.info "client #{c['client_mac']} seen on ap #{c['ap_mac']} with rssi #{c['rssi']} at #{c['last_seen']}"
   end
   ""
