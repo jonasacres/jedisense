@@ -88,7 +88,7 @@ post '/events/:site' do
     
     if c["client_mac"] == "00:88:65:d3:b3:39" and not recentlySeen?(c["client_mac"]) then
       logger.info "saw mark!"
-      sendEmail("Mark Dailey has arrived at the office", "Lo, on this fine morn, our Captain arrives to Preside Over our Labors with His Noble Guidance!", ["acresjonas@gmail.com"])
+      sendEmail("Mark Dailey has arrived at the office", "Lo, on this fine morn, our Captain arrives to Preside Over our Labors with His Noble Guidance!", ["developers@acres4.com","roy.corby@acres4.com"])
     end
     
     $db["clients"].insert(c);
