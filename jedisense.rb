@@ -72,6 +72,7 @@ post '/events' do
   
   map['probing'].each do |c|
     c["last_seen_epoch"] = epochForTimeSeen(c["last_seen"])
+    c["site"] = params["site"]
     db["clients"].insert(c);
     logger.info "client #{c['client_mac']} seen on ap #{c['ap_mac']} with rssi #{c['rssi']} at #{c['last_seen']}"
   end
