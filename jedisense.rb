@@ -75,7 +75,11 @@ get '/people' do
 end
 
 get '/events/:site' do
+<<<<<<< HEAD
   $VALIDATOR
+=======
+  VALIDATOR
+>>>>>>> 5815f5d2286beb3c41c60dfac072d2a14653ddf3
 end
 
 post '/events/:site' do
