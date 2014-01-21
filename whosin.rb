@@ -10,15 +10,22 @@ res = Net::HTTP.start(url.host, url.port) {|http|
 }
 
 clients = JSON.parse(res.body)
+clientsByOffice = {}
 
-count = 0
+countByOffice = {}
 clients.each do |client|
   next unless client.has_key?("user")
-  count += 1
+  site = client["site"] || "Unknown"
+  
+  countByOffice[site] = 0 unless countByOffice.has_key?(site)
+  clientsByOffice[site] = [] unless clientsByOffice.has_key?(site)
+  countByOffice[site] += 1
+  clientsByOffice[site].push(client)
 end
 
-puts "#{count} known users at office:"
-clients.each do |client|
-  next unless client.has_key?("user")
-  puts "\t#{client['user']}"
+clientsByOffice.keys.each do |site|
+  puts "#{site} (#{clientsByOffice[site].length})"
+  clientsByOffice[site].each do |client|
+    puts "\t#{client['user']}"
+  end
 end
