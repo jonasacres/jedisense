@@ -28,10 +28,7 @@ end
 
 def recentlySeen?(mac)
   sighting = $db["clients"].find_one( { "$query" => { 'client_mac' => mac }, "$orderby" => { 'last_seen_epoch' => -1 }  } )
-  return false unless sighting
-  
-  timeAgo = Time.new().to_i - sighting["last_seen_epoch"].to_i
-  return timeAgo <= 60*60*8
+  return sighting != nil
 end
 
 def sendEmail(subject, body, recipients)
@@ -90,7 +87,8 @@ post '/events/:site' do
     c["site"] = params["site"]
     
     if c["client_mac"] == "00:88:65:d3:b3:39" and not recentlySeen?(c["client_mac"]) then
-      sendEmail("Mark Dailey has arrived at the office", "Lo, on this fine morn, our Captain arrives to Preside Over our Labors with His Noble Guidance!", ["developers@acres4.com","roy.corby@acres4.com"])
+      logger.info "saw mark!"
+      sendEmail("Mark Dailey has arrived at the office", "Lo, on this fine morn, our Captain arrives to Preside Over our Labors with His Noble Guidance!", ["acresjonas@gmail.com"])
     end
     
     $db["clients"].insert(c);
