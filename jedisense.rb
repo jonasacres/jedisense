@@ -59,11 +59,11 @@ get '/people' do
   seenRecords.values.to_json
 end
 
-get '/events' do
+get '/events/:site' do
   VALIDATOR
 end
 
-post '/events' do
+post '/events/:site' do
   map = JSON.parse(params[:data])
   if map['secret'] != SECRET
     logger.warn "got post with bad secret: #{map['secret']}"
