@@ -126,4 +126,7 @@ webrickOpts = {
   :SSLPrivateKey => pkey
 }
 
+Signal.trap('INT') {
+  Rack::Handler::WEBrick.shutdown
+}
 Rack::Handler::WEBrick.run app, webrickOpts
