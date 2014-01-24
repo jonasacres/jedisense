@@ -3,7 +3,7 @@
 require 'json'
 require 'net/https'
 
-uri = URI.parse('https://presence.a4sw.co:3310/people')
+uri = URI.parse('https://presence.a4sw.co:3200/people')
 http = Net::HTTP.new(uri.host, uri.port)
 http.use_ssl = true
 
