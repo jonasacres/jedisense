@@ -124,7 +124,6 @@ webrickOpts = {
   :SSLEnable => true,
   :SSLCertificate => cert,
   :SSLPrivateKey => pkey,
-  :SSLVerifyClient => OpenSSL::SSL::VERIFY_NONE
 }
 
 Signal.trap('INT') {
