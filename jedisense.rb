@@ -123,7 +123,8 @@ webrickOpts = {
   :Port => ENV["HTTPS_PORT"],
   :SSLEnable => true,
   :SSLCertificate => cert,
-  :SSLPrivateKey => pkey
+  :SSLPrivateKey => pkey,
+  :SSLVerifyClient => OpenSSL::SSL::VERIFY_NONE
 }
 
 Signal.trap('INT') {
