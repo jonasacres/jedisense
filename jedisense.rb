@@ -121,7 +121,7 @@ cert = OpenSSL::X509::Certificate.new File.read '_ssl/certificate.crt'
 pkey = OpenSSL::PKey::RSA.new File.read '_ssl/private.key'
 webrickOpts = {
   :Port => ENV["HTTPS_PORT"],
-  :SSLEnable => true,
+  :SSLEnable => false,
   :SSLCertificate => cert,
   :SSLPrivateKey => pkey,
 }
